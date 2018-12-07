@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
  
 from database_setup import Restaurant, Base, MenuItem
  
@@ -8,19 +8,11 @@ engine = create_engine('sqlite:///restaurantmenu.db')
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
  
-DBSession = sessionmaker(bind=engine)
-# A DBSession() instance establishes all conversations with the database
-# and represents a "staging zone" for all the objects loaded into the
-# database session object. Any change made against the objects in the
-# session won't be persisted into the database until you call
-# session.commit(). If you're not happy about the changes, you can
-# revert all of them back to the last commit by calling
-# session.rollback()
-session = DBSession()
+session = scoped_session(sessionmaker(bind=engine))
 
 
 
-#Menu for UrbanBurger
+# Menu for UrbanBurger
 restaurant1 = Restaurant(name = "Urban Burger")
 
 session.add(restaurant1)
@@ -70,7 +62,7 @@ session.commit()
 
 
 
-#Menu for Super Stir Fry
+# Menu for Super Stir Fry
 restaurant2 = Restaurant(name = "Super Stir Fry")
 
 session.add(restaurant2)
@@ -110,7 +102,7 @@ session.commit()
 
 
 
-#Menu for Panda Garden
+# Menu for Panda Garden
 restaurant1 = Restaurant(name = "Panda Garden")
 
 session.add(restaurant1)
@@ -139,7 +131,7 @@ session.commit()
 
 
 
-#Menu for Thyme for that
+# Menu for Thyme for that
 restaurant1 = Restaurant(name = "Thyme for That Vegetarian Cuisine ")
 
 session.add(restaurant1)
@@ -174,7 +166,7 @@ session.commit()
 
 
 
-#Menu for Tony's Bistro
+# Menu for Tony's Bistro
 restaurant1 = Restaurant(name = "Tony\'s Bistro ")
 
 session.add(restaurant1)
@@ -209,7 +201,7 @@ session.commit()
 
 
 
-#Menu for Andala's 
+# Menu for Andala's
 restaurant1 = Restaurant(name = "Andala\'s")
 
 session.add(restaurant1)
@@ -239,7 +231,7 @@ session.commit()
 
 
 
-#Menu for Auntie Ann's
+# Menu for Auntie Ann's
 restaurant1 = Restaurant(name = "Auntie Ann\'s Diner ")
 
 session.add(restaurant1)
@@ -275,7 +267,7 @@ session.commit()
 
 
 
-#Menu for Cocina Y Amor
+# Menu for Cocina Y Amor
 restaurant1 = Restaurant(name = "Cocina Y Amor ")
 
 session.add(restaurant1)
@@ -292,5 +284,5 @@ menuItem2 = MenuItem(name = "Cachapa", description = "Golden brown, corn-based v
 session.add(menuItem2)
 session.commit()
 
-print "added menu items!"
+print("added menu items!")
 

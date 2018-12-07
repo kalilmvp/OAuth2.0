@@ -53,8 +53,8 @@
 	
 	{% if items !=[] %}	
 		<div class="row">
-			<div class="col-md-1"></div>
-			<div class="col-md-3">
+			<!--div class="col-md-1"></div-->
+			<div class="col-md-4">
 				<h2>Appetizers</h2>
 					{% for i in items %}
 						{% if i.course == 'Appetizer' %}
@@ -82,7 +82,7 @@
 						{% endif %}
 					{% endfor %}
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-4">
 				<h2>Desserts</h2>
 					{% for i in items %}
 						{% if i.course == 'Dessert' %}
@@ -108,7 +108,7 @@
 						{% endif %}
 					{% endfor %}
 			</div>
-			<div class="col-md-1"></div>
+			<!--div class="col-md-1"></div-->
 		</div>
 	{% endif %}
 {% endblock %}
