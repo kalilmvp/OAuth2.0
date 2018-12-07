@@ -21,7 +21,7 @@
     <script>
         function signInCallback(authResult) {
             if (authResult['code']) {
-                $('signinButton').attr('style', 'display:none')
+                $('#signinButton').attr('style', 'display:none')
 
                 $.ajax({
                     type: 'POST',
@@ -31,17 +31,18 @@
                     contentType: 'application/octet-stream; charset=utf-8',
                     success: function (result) {
                         if(result) {
-                            $('result').html('Login successful <br/>' + result + '</br>Redirecting.....')
+                            console.log(result)
+                            $('#result').html('Login successful <br/>' + result + '</br>Redirecting.....')
                             setTimeout(function () {
-                                window.location.href = '/restaurants'
-                            }, 4000)
+                                window.location.href = '/restaurant'
+                            }, 2000)
                         }
                     }
                 })
             } else if (authResult['error']) {
                 console.log('There was an error..' + authResult['error'])
             } else {
-                $('result').html('Failed to make the server-side call.. Check your debug console')
+                $('#result').html('Failed to make the server-side call.. Check your debug console')
             }
         }
 

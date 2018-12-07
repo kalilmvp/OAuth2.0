@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect,jsonify, url_for, flash, make_response
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from flask import Flask, render_template, request, redirect,jsonify, url_for, flash, get_flashed_messages, make_response
 from flask import session as login_session
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -16,6 +19,9 @@ engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
 session = scoped_session(sessionmaker(bind=engine))
+
+CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id']
+APP_NAME = 'Restaurant Menu App'
 
 
 # JSON APIs to view Restaurant Information
@@ -98,7 +104,7 @@ def showMenu(restaurant_id):
 def newMenuItem(restaurant_id):
   restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
-      newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
+      newItem = MenuItem(name = request.form['name'], description = request.form['description'], price=request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
       session.add(newItem)
       session.commit()
       flash('New Menu %s Item Successfully Created' % (newItem.name))
@@ -154,8 +160,82 @@ def show_login():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    print('gconnect')
 
+    # Validate state token
+    if request.args.get('state') != login_session['state']:
+        # Different state data
+        return create_response('Invalid state parameter')
+
+    code = request.data
+
+    try:
+        # Upgrade the authorization code into the credentials object
+        oauth_flow = flow_from_clientsecrets('client_secret.json', scope='')
+        oauth_flow.redirect_uri = 'postmessage'
+        credentials = oauth_flow.step2_exchange(code)
+    except FlowExchangeError as fee:
+        return create_response('Failed to updgrade')
+
+    access_token = credentials.access_token
+    url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={}'.format(access_token)
+    h = httplib2.Http()
+    result = json.loads(h.request(url, 'GET')[1])
+
+    if result.get('error') is not None:
+        return create_response(result.get('error'), 500)
+
+    # Verify that the access_token is used for the intended user
+    gplus_id = credentials.id_token['sub']
+
+    if result['user_id'] != gplus_id:
+        return create_response('Token user id does not match giver user id')
+
+    # Verify that the access token is valid for this app
+    if result['issued_to'] != CLIENT_ID:
+        return create_response('Token client id does not match app´s')
+
+    stored_access_token = login_session.get('access_token')
+    stored_gplus_id = login_session.get('gplus_id')
+
+    if stored_access_token is not None and stored_gplus_id == gplus_id:
+        return create_response('Current user is already connected', 200)
+
+    # store data on the session for later use
+    login_session['acess_token'] = access_token
+    login_session['gplus_id'] = gplus_id
+
+    # Get user info
+    user_info_url = 'https://www.googleapis.com/oauth2/v1/userinfo'
+    params = {
+        'access_token': access_token,
+        'alt': 'json'
+    }
+    answer = requests.get(user_info_url, params)
+
+    data = answer.json()
+
+    login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
+    login_session['email'] = data['email']
+
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += """style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;
+    -moz-border-radius: 150px;">"""""
+
+    flash("you are now logged in as {}".format(login_session['username']))
+
+    return output
+
+
+def create_response(msg, code=401):
+    resp = make_response(json.dumps(msg), code)
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
 
 
 if __name__ == '__main__':
