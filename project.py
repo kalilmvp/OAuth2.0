@@ -1,7 +1,12 @@
-from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
+from flask import Flask, render_template, request, redirect,jsonify, url_for, flash, make_response
+from flask import session as login_session
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker, scoped_session
 from database_setup import Base, Restaurant, MenuItem
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import FlowExchangeError
+import random, string, httplib2, json, requests
+
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
@@ -127,7 +132,7 @@ def editMenuItem(restaurant_id, menu_id):
 
 # Delete a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods = ['GET','POST'])
-def deleteMenuItem(restaurant_id,menu_id):
+def deleteMenuItem(restaurant_id, menu_id):
     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
     itemToDelete = session.query(MenuItem).filter_by(id = menu_id).one() 
     if request.method == 'POST':
@@ -139,6 +144,20 @@ def deleteMenuItem(restaurant_id,menu_id):
         return render_template('deleteMenuItem.html', item = itemToDelete)
 
 
+# Create anti-forgery state token
+@app.route('/login')
+def show_login():
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+    login_session['state'] = state
+    return render_template('login.html', STATE=login_session['state'])
+
+
+@app.route('/gconnect', methods=['POST'])
+def gconnect():
+    print('gconnect')
+
+
+
 if __name__ == '__main__':
-  app.debug = True
-  app.run(host = '0.0.0.0', port = 5000)
+    app.debug = True
+    app.run(host='0.0.0.0', port=5000)
