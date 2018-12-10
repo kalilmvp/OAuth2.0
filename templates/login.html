@@ -22,6 +22,7 @@
         function signInCallback(authResult) {
             if (authResult['code']) {
                 $('#signinButton').attr('style', 'display:none')
+                $('#fbSiginButton').attr('style', 'display:none')
 
                 $.ajax({
                     type: 'POST',
@@ -68,6 +69,8 @@
         // Here we run a very simple test of the Graph API after login is
         // successful.  See statusChangeCallback() for when this call is made.
         function checkLoginState() {
+            $('#fbSiginButton').attr('style', 'display:none')
+            $('#signinButton').attr('style', 'display:none')
             var access_token = FB.getAuthResponse()['accessToken'];
             console.log(access_token)
             console.log('Welcome!  Fetching your information.... ');
@@ -102,7 +105,8 @@
 
     <fb:login-button
             scope="public_profile,email"
-            onlogin="checkLoginState();">
+            onlogin="checkLoginState();"
+            id="fbSiginButton">
         <a href='javascript:checkLoginState()'>Login with Facebook</a>
     </fb:login-button>
   </body>
