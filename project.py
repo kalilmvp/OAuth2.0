@@ -53,15 +53,17 @@ def showRestaurants():
 
 # Create a new restaurant
 @app.route('/restaurant/new/', methods=['GET','POST'])
-def newRestaurant():
-  if request.method == 'POST':
-      newRestaurant = Restaurant(name = request.form['name'])
-      session.add(newRestaurant)
-      flash('New Restaurant %s Successfully Created' % newRestaurant.name)
-      session.commit()
-      return redirect(url_for('showRestaurants'))
-  else:
-      return render_template('newRestaurant.html')
+def new_restaurant():
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        new = Restaurant(name=request.form['name'])
+        session.add(new)
+        flash('New Restaurant {} Successfully Created'.format(new.name))
+        session.commit()
+        return redirect(url_for('showRestaurants'))
+    else:
+        return render_template('newRestaurant.html')
 
 
 # Edit a restaurant
